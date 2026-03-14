@@ -1,14 +1,14 @@
 const express = require('express');
 const sequelize = require('./config/database');
 const librosRouter = require('./routes/libros');
+const usuariosRouter = require('./routes/usuarios'); // ← agregar
 
 const app = express();
 app.use(express.json());
 
-// Rutas
 app.use('/api/libros', librosRouter);
+app.use('/api/usuarios', usuariosRouter); // ← agregar
 
-// Ruta de prueba
 app.get('/', (req, res) => {
   res.json({ mensaje: '¡API Biblioteca funcionando!' });
 });
