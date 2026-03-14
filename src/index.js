@@ -1,15 +1,18 @@
 const express = require('express');
 const sequelize = require('./config/database');
+const librosRouter = require('./routes/libros');
 
 const app = express();
 app.use(express.json());
+
+// Rutas
+app.use('/api/libros', librosRouter);
 
 // Ruta de prueba
 app.get('/', (req, res) => {
   res.json({ mensaje: '¡API Biblioteca funcionando!' });
 });
 
-// Conectar a la BD e iniciar servidor
 const PORT = 3000;
 
 sequelize.authenticate()
