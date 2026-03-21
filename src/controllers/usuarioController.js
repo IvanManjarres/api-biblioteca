@@ -56,6 +56,16 @@ const eliminar = async (req, res) => {
   try {
     const usuario = await Usuario.findByPk(req.params.id);
     if (!usuario) return res.status(404).json({ mensaje: 'Usuario no encontrado' });
+
+    // Verificar préstamos activos
+    const Prestamo = require('../models/prestamo');
+    const prestamosActivos = await Prestamo.count({
+      where: { usuarioId: req.params.id, fechaDevolucion: null }
+    });
+    if (prestamosActivos > 0) {
+      return res.status(400).json({ mensaje: 'No se puede eliminar el usuario porque tiene préstamos activos' });
+    }
+
     await usuario.destroy();
     res.json({ mensaje: 'Usuario eliminado correctamente' });
   } catch (error) {
