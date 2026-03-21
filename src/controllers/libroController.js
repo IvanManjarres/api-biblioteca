@@ -55,6 +55,16 @@ const eliminar = async (req, res) => {
   try {
     const libro = await Libro.findByPk(req.params.id);
     if (!libro) return res.status(404).json({ mensaje: 'Libro no encontrado' });
+
+    // Verificar préstamos activos
+    const Prestamo = require('../models/prestamo');
+    const prestamosActivos = await Prestamo.count({
+      where: { libroId: req.params.id, fechaDevolucion: null }
+    });
+    if (prestamosActivos > 0) {
+      return res.status(400).json({ mensaje: 'No se puede eliminar el libro porque tiene préstamos activos' });
+    }
+
     await libro.destroy();
     res.json({ mensaje: 'Libro eliminado correctamente' });
   } catch (error) {
