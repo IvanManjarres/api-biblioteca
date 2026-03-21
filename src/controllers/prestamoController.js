@@ -60,4 +60,24 @@ const obtenerActivos = async (req, res) => {
   }
 };
 
-module.exports = { registrar, devolver, obtenerActivos };
+// GET /api/prestamos/usuario/:id — Historial por usuario
+const historialPorUsuario = async (req, res) => {
+  try {
+    const usuario = await Usuario.findByPk(req.params.id);
+    if (!usuario) return res.status(404).json({ mensaje: 'Usuario no encontrado' });
+
+    const prestamos = await Prestamo.findAll({
+      where: { usuarioId: req.params.id },
+      include: [
+        { model: require('../models/libro'), as: 'libro', attributes: ['id', 'titulo', 'autor'] }
+      ],
+      order: [['fechaPrestamo', 'DESC']]
+    });
+
+    res.json({ usuario: usuario.nombre, totalPrestamos: prestamos.length, prestamos });
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error al obtener historial', error: error.message });
+  }
+};
+
+module.exports = { registrar, devolver, obtenerActivos, historialPorUsuario };
