@@ -43,6 +43,20 @@ const actualizar = async (req, res) => {
   try {
     const libro = await Libro.findByPk(req.params.id);
     if (!libro) return res.status(404).json({ mensaje: 'Libro no encontrado' });
+
+    // Si se actualiza la cantidad, ajustar disponibles proporcionalmente
+    if (req.body.cantidad !== undefined) {
+      const diferencia = req.body.cantidad - libro.cantidad;
+      const nuevosDisponibles = libro.disponibles + diferencia;
+
+      if (nuevosDisponibles < 0) {
+        return res.status(400).json({ 
+          mensaje: `No puedes reducir la cantidad a ${req.body.cantidad} porque hay ${libro.cantidad - libro.disponibles} copias prestadas actualmente` 
+        });
+      }
+      req.body.disponibles = nuevosDisponibles;
+    }
+
     await libro.update(req.body);
     res.json(libro);
   } catch (error) {
@@ -56,13 +70,16 @@ const eliminar = async (req, res) => {
     const libro = await Libro.findByPk(req.params.id);
     if (!libro) return res.status(404).json({ mensaje: 'Libro no encontrado' });
 
-    // Verificar préstamos activos
     const Prestamo = require('../models/prestamo');
-    const prestamosActivos = await Prestamo.count({
-      where: { libroId: req.params.id, fechaDevolucion: null }
+
+    // Verificar cualquier préstamo — activo o histórico
+    const totalPrestamos = await Prestamo.count({
+      where: { libroId: req.params.id }
     });
-    if (prestamosActivos > 0) {
-      return res.status(400).json({ mensaje: 'No se puede eliminar el libro porque tiene préstamos activos' });
+    if (totalPrestamos > 0) {
+      return res.status(400).json({ 
+        mensaje: 'No se puede eliminar el libro porque tiene historial de préstamos' 
+      });
     }
 
     await libro.destroy();

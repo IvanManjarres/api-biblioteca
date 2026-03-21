@@ -4,6 +4,8 @@ const librosRouter = require('./routes/libros');
 const usuariosRouter = require('./routes/usuarios');
 
 const app = express();
+const cors = require('cors'); // ← agregar
+app.use(cors());              // ← agregar
 app.use(express.json());
 const prestamosRouter = require('./routes/prestamos'); 
 app.use('/api/prestamos', prestamosRouter);            
